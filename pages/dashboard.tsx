@@ -5,6 +5,8 @@ import { LogDisplay } from '../components/LogDisplay';
 import { ItemData, LogEntry } from '../types';
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { generateCSV } from '../utils/csv';
+import { downloadCSV } from '../utils/download';
 
 export default function Dashboard() {
   const [items, setItems] = useState<ItemData[]>([]);
@@ -17,7 +19,12 @@ export default function Dashboard() {
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [skippedCount, setSkippedCount] = useState<number>(0);
 
- const handleSubmit = async () => {
+  const handleCSVDownload = () => {
+    const csvContent = generateCSV(logs);
+    downloadCSV(csvContent, 'log_export.csv');
+  };
+
+  const handleSubmit = async () => {
     setLoading(true);
     setError(null);
     setResults([]);
@@ -154,9 +161,14 @@ export default function Dashboard() {
       )}
 
     <div className="mt-8">
-      <h2 className="text-xl font-semibold mb-4">System Logs</h2>
-      <LogDisplay logs={logs} />
-    </div>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">System Logs</h2>
+          <Button onClick={handleCSVDownload} disabled={logs.length === 0}>
+            Export CSV
+          </Button>
+        </div>
+        <LogDisplay logs={logs} />
+      </div>
   </div>
   );
 }
