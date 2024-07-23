@@ -3,11 +3,17 @@ export interface ItemData {
   available: boolean;
   price: number;
   url: string;
+  title: string;
+  vendor: string;
 }
 
 export interface LogEntry {
   timestamp: string;
-  level: 'info' | 'warn' | 'error';
+  title: string;
+  jan: string;
+  price: number;
+  vendor: string;
+  url: string;
+  status: string;
   message: string;
-  details?: any;
 }

@@ -1,16 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CSVImport } from '../components/CSVImport';
 import { ProgressBar } from '../components/ProgressBar';
-import ItemForm from '../components/ItemForm';
-import { ItemData } from '../types';
+import { LogDisplay } from '../components/LogDisplay';
+import { ItemData, LogEntry } from '../types';
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
 
 export default function Dashboard() {
   const [items, setItems] = useState<ItemData[]>([]);
@@ -20,12 +14,10 @@ export default function Dashboard() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [progress, setProgress] = useState({ current: 0, total: 0, currentItem: '' });
   const [showForm, setShowForm] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [skippedCount, setSkippedCount] = useState<number>(0);
 
-  const handleAddItem = (item: ItemData) => {
-    setItems([...items, item]);
-  };
-
-  const handleSubmit = async () => {
+ const handleSubmit = async () => {
     setLoading(true);
     setError(null);
     setResults([]);
@@ -47,31 +39,43 @@ export default function Dashboard() {
 
         const data = await response.json();
         setResults(prev => [...prev, ...data.results]);
+
+        // 新しいログエントリを作成
+        const newLog: LogEntry = {
+          timestamp: new Date().toISOString(),
+          title: item.title || '',
+          jan: item.jan,
+          price: item.price,
+          vendor: item.vendor || '',
+          url: item.url,
+          status: data.results[0].result.status,
+          message: data.results[0].result.message || ''
+        };
+
+        // ログを更新（既存のログに新しいログを追加）
+        setLogs(prevLogs => [newLog, ...prevLogs]);
       } catch (e) {
-        setError(prev => (prev ? `${prev}\n` : '') + `Error processing ${item.jan}: ${e instanceof Error ? e.message : 'Unknown error'}`);
+        const errorMessage = e instanceof Error ? e.message : 'Unknown error';
+        setError(prev => (prev ? `${prev}\n` : '') + `Error processing ${item.jan}: ${errorMessage}`);
+
+        // エラーログを追加
+        const errorLog: LogEntry = {
+          timestamp: new Date().toISOString(),
+          title: item.title || '',
+          jan: item.jan,
+          price: item.price,
+          vendor: item.vendor || '',
+          url: item.url,
+          status: 'FAILED',
+          message: errorMessage
+        };
+        setLogs(prevLogs => [errorLog, ...prevLogs]);
       }
     }
 
     setLoading(false);
     setItems([]);
-    fetchLogs();
   };
-
-  const fetchLogs = async () => {
-    try {
-      const response = await fetch('/api/logs');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setLogs(data);
-    } catch (e) {
-      console.error('Error fetching logs:', e);
-    }
-  };
-
-   const [validationErrors, setValidationErrors] = useState<string[]>([]);
-  const [skippedCount, setSkippedCount] = useState<number>(0);
 
   const handleImport = (importedItems: ItemData[], skipped: number) => {
     setItems(importedItems);
@@ -132,8 +136,6 @@ export default function Dashboard() {
         {showForm ? 'Hide' : 'Show'} Manual Input Form
       </Button>
 
-      {showForm && <ItemForm onAddItem={handleAddItem} />}
-
       {items.length > 0 && (
         <Button
           onClick={handleSubmit}
@@ -151,37 +153,10 @@ export default function Dashboard() {
         </div>
       )}
 
-      {results.length > 0 && (
-        <div className="mt-4">
-          <h3 className="text-lg font-semibold">Results:</h3>
-          {results.map((result, index) => (
-            <div key={index} className="bg-green-100 p-2 mb-2 rounded">
-              <p>JAN: {result.jan}</p>
-              <p>Status: {result.result.status}</p>
-              {result.result.message && <p>Message: {result.result.message}</p>}
-            </div>
-          ))}
-        </div>
-      )}
-
-      <Accordion type="single" collapsible className="mt-8">
-        <AccordionItem value="logs">
-          <AccordionTrigger>System Logs</AccordionTrigger>
-          <AccordionContent>
-            <div className="bg-gray-100 p-4 rounded max-h-96 overflow-y-auto">
-              {logs.map((log, index) => (
-                <div key={index} className={`mb-2 p-2 rounded ${
-                  log.level === 'error' ? 'bg-red-200' :
-                  log.level === 'warn' ? 'bg-yellow-200' : 'bg-green-200'
-                }`}>
-                  <p><strong>{log.timestamp}</strong> [{log.level.toUpperCase()}] {log.message}</p>
-                  {log.details && <pre className="text-sm">{JSON.stringify(log.details, null, 2)}</pre>}
-                </div>
-              ))}
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+    <div className="mt-8">
+      <h2 className="text-xl font-semibold mb-4">System Logs</h2>
+      <LogDisplay logs={logs} />
     </div>
+  </div>
   );
 }

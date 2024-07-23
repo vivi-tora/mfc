@@ -6,6 +6,12 @@ export interface LogEntry {
   timestamp: string;
   level: 'info' | 'warn' | 'error';
   message: string;
+  title: string;
+  jan: string;
+  price: string;
+  vendor: string;
+  url: string;
+  status: string;
   details?: any;
   data?: any;
   request?: {
@@ -74,6 +80,27 @@ class Logger {
       message,
       request,
       response,
+      title: '',
+      jan: '',
+      price: '',
+      vendor: '',
+      url: '',
+      status: ''
+    };
+    this.writeLog(entry);
+  }
+
+  logItemProcess(item: any, result: any) {
+    const entry: LogEntry = {
+      timestamp: new Date().toISOString(),
+      level: result.status === 'SUCCESS' ? 'info' : 'warn',
+      title: item.title,
+      jan: item.jan,
+      price: item.price,
+      vendor: item.vendor,
+      url: item.url,
+      status: result.status,
+      message: result.message,
     };
     this.writeLog(entry);
   }
@@ -85,6 +112,12 @@ class Logger {
       message,
       details,
       data,
+      title: '',
+      jan: '',
+      price: '',
+      vendor: '',
+      url: '',
+      status: ''
     };
     this.writeLog(entry);
   }

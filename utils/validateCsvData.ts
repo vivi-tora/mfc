@@ -75,7 +75,9 @@ export function validateCsvData(data: any[]): ValidationResult {
         jan: row['Variant Barcode'],
         available: true,
         price: Number(row['Variant Price']),
-        url: row['URL']
+        url: row['URL'],
+        title: row['Title'],
+        vendor: row['Vendor']
       });
     }
   });

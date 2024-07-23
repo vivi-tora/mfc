@@ -34,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     logger.info(`Processing ${items.length} items`, { data: { itemCount: items.length } });
     const results = await Promise.all(items.map(async (item: any) => {
-      const { jan, available, price, url } = item;
+      const { jan, available, price, url, title, vendor } = item;
 
       if (!jan || typeof available !== 'boolean' || !price || !url) {
         logger.error(`Invalid item data`, { data: { item } });
@@ -79,6 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       const data = await response.json();
+      logger.logItemProcess(item, data);
       logger.logRequest(`Received response for JAN: ${jan}`,
         {
           method: 'POST',
