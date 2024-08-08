@@ -123,7 +123,8 @@ export default function Dashboard() {
         <Alert variant="warning" className="mb-4">
           <AlertTitle>スキップされた行</AlertTitle>
           <AlertDescription>
-            Status が 'Active' でない {skippedCount} 行がスキップされました。
+            Status が &quot;Active&quot; でない {skippedCount}{" "}
+            行がスキップされました。
           </AlertDescription>
         </Alert>
       )}
