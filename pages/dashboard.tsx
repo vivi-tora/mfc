@@ -100,7 +100,10 @@ export default function Dashboard() {
       <h1 className="text-2xl font-bold mb-4">MFC Availability Management</h1>
 
       <div className="mb-4">
-        <CSVImport onImport={handleImport} onValidationError={handleValidationError} />
+        <CSVImport
+          onImport={handleImport}
+          onValidationError={handleValidationError}
+        />
       </div>
 
       {validationErrors.length > 0 && (
@@ -120,7 +123,7 @@ export default function Dashboard() {
         <Alert variant="warning" className="mb-4">
           <AlertTitle>スキップされた行</AlertTitle>
           <AlertDescription>
-            Status が "Active" でない {skippedCount} 行がスキップされました。
+            Status が 'Active' でない {skippedCount} 行がスキップされました。
           </AlertDescription>
         </Alert>
       )}
@@ -136,20 +139,17 @@ export default function Dashboard() {
         </div>
       )}
 
-      <Button
-        onClick={() => setShowForm(!showForm)}
-        className="mb-4"
-      >
-        {showForm ? 'Hide' : 'Show'} Manual Input Form
+      <Button onClick={() => setShowForm(!showForm)} className="mb-4">
+        {showForm ? "Hide" : "Show"} Manual Input Form
       </Button>
 
       {items.length > 0 && (
         <Button
           onClick={handleSubmit}
           disabled={loading}
-          className={`mt-4 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`mt-4 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
         >
-          {loading ? 'Processing...' : 'Submit All Items'}
+          {loading ? "Processing..." : "Submit All Items"}
         </Button>
       )}
 
@@ -160,7 +160,7 @@ export default function Dashboard() {
         </div>
       )}
 
-    <div className="mt-8">
+      <div className="mt-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">System Logs</h2>
           <Button onClick={handleCSVDownload} disabled={logs.length === 0}>
@@ -169,6 +169,6 @@ export default function Dashboard() {
         </div>
         <LogDisplay logs={logs} />
       </div>
-  </div>
+    </div>
   );
 }
