@@ -16,4 +16,5 @@ export interface LogEntry {
   url: string;
   status: string;
   message: string;
+  level: string;
 }

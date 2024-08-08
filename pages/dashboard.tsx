@@ -56,7 +56,8 @@ export default function Dashboard() {
           vendor: item.vendor || '',
           url: item.url,
           status: data.results[0].result.status,
-          message: data.results[0].result.message || ''
+          message: data.results[0].result.message || '',
+          level: 'info'
         };
 
         // ログを更新（既存のログに新しいログを追加）
@@ -74,7 +75,8 @@ export default function Dashboard() {
           vendor: item.vendor || '',
           url: item.url,
           status: 'FAILED',
-          message: errorMessage
+          message: errorMessage,
+          level: 'error'
         };
         setLogs(prevLogs => [errorLog, ...prevLogs]);
       }
@@ -120,7 +122,7 @@ export default function Dashboard() {
       )}
 
       {skippedCount > 0 && (
-        <Alert variant="warning" className="mb-4">
+        <Alert variant="destructive" className="mb-4">
           <AlertTitle>スキップされた行</AlertTitle>
           <AlertDescription>
             Status が &quot;Active&quot; でない {skippedCount}{" "}
