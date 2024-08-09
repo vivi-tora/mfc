@@ -1,6 +1,4 @@
 // utils/logger.ts
-import fs from 'fs';
-import path from 'path';
 
 export interface LogEntry {
   timestamp: string;
@@ -27,38 +25,37 @@ export interface LogEntry {
 }
 
 class Logger {
-  private logFile: string;
-
-  constructor() {
-    this.logFile = path.join(process.cwd(), 'logs', 'app.log');
-    this.ensureLogDirectory();
-  }
-
-  private ensureLogDirectory() {
-    const dir = path.dirname(this.logFile);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-  }
+  private logs: LogEntry[] = [];
 
   private writeLog(entry: LogEntry) {
-    const logString = `${entry.timestamp} [${entry.level.toUpperCase()}] ${entry.message}\n`;
+    this.logs.push(entry);
+    const logString = `${entry.timestamp} [${entry.level.toUpperCase()}] ${entry.message}`;
     let detailsString = '';
 
     if (entry.details) {
-      detailsString += `Details: ${JSON.stringify(entry.details, null, 2)}\n`;
+      detailsString += `\nDetails: ${JSON.stringify(entry.details, null, 2)}`;
     }
     if (entry.data) {
-      detailsString += `Data: ${JSON.stringify(entry.data, null, 2)}\n`;
+      detailsString += `\nData: ${JSON.stringify(entry.data, null, 2)}`;
     }
     if (entry.request) {
-      detailsString += `Request: ${JSON.stringify(entry.request, null, 2)}\n`;
+      detailsString += `\nRequest: ${JSON.stringify(entry.request, null, 2)}`;
     }
     if (entry.response) {
-      detailsString += `Response: ${JSON.stringify(entry.response, null, 2)}\n`;
+      detailsString += `\nResponse: ${JSON.stringify(entry.response, null, 2)}`;
     }
 
-    fs.appendFileSync(this.logFile, `${logString}${detailsString}\n`);
+    switch (entry.level) {
+      case 'info':
+        console.log(`${logString}${detailsString}`);
+        break;
+      case 'warn':
+        console.warn(`${logString}${detailsString}`);
+        break;
+      case 'error':
+        console.error(`${logString}${detailsString}`);
+        break;
+    }
   }
 
   info(message: string, details?: any, data?: any) {
@@ -122,50 +119,8 @@ class Logger {
     this.writeLog(entry);
   }
 
-  async getLogs(limit: number = 100): Promise<LogEntry[]> {
-    return new Promise((resolve, reject) => {
-      fs.readFile(this.logFile, 'utf8', (err, data) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        const logs = data.split('\n\n')
-          .filter(entry => entry.trim() !== '')
-          .map(entry => {
-            const [header, ...detailsLines] = entry.split('\n');
-            const [timestamp, level, ...messageParts] = header.split(' ');
-            const message = messageParts.join(' ');
-            const details: any = {};
-            let currentKey: string | null = null;
-
-            detailsLines.forEach(line => {
-              if (line.startsWith('Details: ') || line.startsWith('Data: ') || line.startsWith('Request: ') || line.startsWith('Response: ')) {
-                currentKey = line.split(':')[0].toLowerCase();
-                details[currentKey] = line.substring(line.indexOf(':') + 1).trim();
-              } else if (currentKey) {
-                details[currentKey] += '\n' + line;
-              }
-            });
-
-            Object.keys(details).forEach(key => {
-              try {
-                details[key] = JSON.parse(details[key]);
-              } catch (e) {
-                // パースできない場合は文字列のまま
-              }
-            });
-
-            return {
-              timestamp: timestamp.replace('[', '').replace(']', ''),
-              level: level.replace('[', '').replace(']', '').toLowerCase() as 'info' | 'warn' | 'error',
-              message,
-              ...details,
-            };
-          })
-          .slice(-limit);
-        resolve(logs.reverse());
-      });
-    });
+  getLogs(limit: number = 100): LogEntry[] {
+    return this.logs.slice(-limit).reverse();
   }
 }
 
