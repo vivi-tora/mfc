@@ -19,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { items } = req.body;
 
   if (!Array.isArray(items) || items.length === 0) {
-    logger.error('Invalid or empty items array', { data: { items } });
+    logger.error('Invalid or empty items array', { items });
     return res.status(400).json({ error: 'Invalid or empty items array' });
   }
 
@@ -32,12 +32,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    logger.info(`Processing ${items.length} items`, { data: { itemCount: items.length } });
+    logger.info(`Processing ${items.length} items`, { itemCount: items.length });
     const results = await Promise.all(items.map(async (item: any) => {
       const { jan, available, price, url, title, vendor } = item;
 
       if (!jan || typeof available !== 'boolean' || !price || !url) {
-        logger.error(`Invalid item data`, { data: { item } });
+        logger.error(`Invalid item data`, { item });
         throw new Error(`Invalid item data for JAN: ${jan}`);
       }
 
@@ -69,11 +69,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       if (!response.ok) {
         logger.error(`HTTP error for JAN: ${jan}`, {
-          data: { jan, status: response.status },
-          response: {
-            status: response.status,
-            statusText: response.statusText,
-          },
+          jan,
+          status: response.status,
+          statusText: response.statusText,
         });
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -95,12 +93,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return { jan, result: data };
     }));
 
-    logger.info(`Successfully processed ${results.length} items`, { data: { processedCount: results.length, results } });
+    logger.info(`Successfully processed ${results.length} items`, { processedCount: results.length, results });
     res.status(200).json({ results });
   } catch (error) {
     logger.error('Error updating availability', {
-      data: { error: error instanceof Error ? error.message : 'Unknown error' },
-      details: error instanceof Error ? error.stack : undefined,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
     });
     res.status(500).json({ error: error instanceof Error ? error.message : 'An unknown error occurred' });
   }
