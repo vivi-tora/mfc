@@ -142,10 +142,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      <Button onClick={() => setShowForm(!showForm)} className="mb-4">
-        {showForm ? "Hide" : "Show"} Manual Input Form
-      </Button>
-
       {items.length > 0 && (
         <Button
           onClick={handleSubmit}
